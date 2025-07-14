@@ -21,11 +21,16 @@ class DSP2Client:
         self.username = username
         self.password = password
 
+        # Use custom base_url if provided; otherwise fall back to config default
         self.base_url = base_url or config.API_BASE_URL
         self._token: Optional[str] = None
+        
+        # Create an HTTPX client for persistent connection reuse
         self._client = httpx.Client(base_url=self.base_url)
 
         logger.logger.info(f"DSP2Client initialized for user {self.username}")
+        
+        # Authenticate the user to get the access token
         self.authenticate()
 
     def authenticate(self) -> None:
@@ -33,6 +38,8 @@ class DSP2Client:
         Authenticate using username and password and store the bearer token.
         """
         token_url = config.TOKEN_ENDPOINT
+        
+        # Request payload as per OAuth2 Resource Owner Password Credentials Grant
         payload = {
             "grant_type": "password",
             "username": self.username,
@@ -42,13 +49,16 @@ class DSP2Client:
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         try:
+            # Send POST request to obtain access token
             response = self._client.post(token_url, data=payload, headers=headers)
-            response.raise_for_status()
+            
+            response.raise_for_status() # Raise exception for HTTP errors
             token_data = response.json()
             self._token = token_data.get("access_token")
             if not self._token:
                 raise RuntimeError("Failed to obtain access token")
 
+            # Add Authorization header to all subsequent requests
             self._client.headers.update({"Authorization": f"Bearer {self._token}"})
             logger.logger.info("Authentication successful")
         except httpx.HTTPStatusError as e:
@@ -130,10 +140,11 @@ class DSP2Client:
             "identity": identity.dict(),
             "accounts": [],
         }
-
+        # Iterate through each account and enrich it with balances and transactions
         for account in accounts:
             account_data = account.dict()
-
+            
+            # Add balances and transactions to each account
             balances = self.get_balances(account.id)
             transactions = self.get_transactions(
                 account.id, count=transactions_per_account
@@ -141,7 +152,8 @@ class DSP2Client:
 
             account_data["balances"] = [balance.dict() for balance in balances]
             account_data["transactions"] = [txn.dict() for txn in transactions]
-
+            
+            # Append complete account info to the result list
             full_data["accounts"].append(account_data)
 
         return full_data
