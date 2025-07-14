@@ -1,0 +1,33 @@
+[project]
+name = "dsp2client"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dotenv>=0.9.9",
+    "httpx>=0.28.1",
+    "pydantic>=2.11.7",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "isort>=6.0.1",
+    "pytest>=8.4.1",
+    "ruff>=0.12.3",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+exclude = ["__pycache__", ".venv", "build", "dist"]
+
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
