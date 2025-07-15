@@ -1,8 +1,9 @@
-import pytest
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from dsp2_client.api_client import DSP2Client
-from dsp2_client.models import UserIdentitySchema, AccountSchema
+from dsp2_client.models import AccountSchema, UserIdentitySchema
 
 
 @pytest.fixture
