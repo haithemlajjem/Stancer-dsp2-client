@@ -1,16 +1,27 @@
-"""
-Logger configuration for the DSP2Client library.
-"""
-
 import logging
+import os
 
-logger = logging.getLogger("dsp2client")
-logger.setLevel(logging.INFO)
 
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+def get_logger(name: str = "dsp2client") -> logging.Logger:
+    """
+    Create and return a configured logger.
+    """
+    logger = logging.getLogger(name)
 
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-ch.setFormatter(formatter)
+    if not logger.hasHandlers():
+        log_level = os.getenv("DSP2CLIENT_LOG_LEVEL", "INFO").upper()
+        logger.setLevel(getattr(logging, log_level, logging.INFO))
 
-logger.addHandler(ch)
+        handler = logging.StreamHandler()
+        handler.setLevel(logger.level)
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        handler.setFormatter(formatter)
+
+        logger.addHandler(handler)
+
+    return logger
+
+
+logger = get_logger()
